@@ -1,0 +1,53 @@
+services:
+  gods-eye-view:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+        CESIUM_ION_TOKEN: ${CESIUM_ION_TOKEN:-}
+    image: gods-eye-view:latest
+    container_name: gods-eye-view
+    init: true
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4173
+      GOOGLE_MAPS_SERVER_API_KEY: ${GOOGLE_MAPS_SERVER_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_REALTIME_MODEL: ${OPENAI_REALTIME_MODEL:-gpt-realtime-2}
+      OPENAI_REALTIME_MODEL_MINI: ${OPENAI_REALTIME_MODEL_MINI:-gpt-realtime-2.1-mini}
+      OPENAI_REALTIME_VOICE: ${OPENAI_REALTIME_VOICE:-marin}
+      OPENAI_REALTIME_REASONING_EFFORT: ${OPENAI_REALTIME_REASONING_EFFORT:-low}
+      OPENAI_REALTIME_CONTEXT_TOKENS: ${OPENAI_REALTIME_CONTEXT_TOKENS:-3000}
+      OPENAI_REALTIME_CONTEXT_RETENTION: ${OPENAI_REALTIME_CONTEXT_RETENTION:-0.5}
+      OPENAI_HUD_SUMMARY_MODEL: ${OPENAI_HUD_SUMMARY_MODEL:-gpt-5-nano}
+      GEV_RATELIMIT_OPENAI_PER_MIN: ${GEV_RATELIMIT_OPENAI_PER_MIN:-}
+      GEV_RATELIMIT_GOOGLE_PER_MIN: ${GEV_RATELIMIT_GOOGLE_PER_MIN:-}
+      OPENSKY_AUTH_MODE: ${OPENSKY_AUTH_MODE:-anon}
+      OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID:-}
+      OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET:-}
+      LL2_API_TOKEN: ${LL2_API_TOKEN:-}
+      AISSTREAM_API_KEY: ${AISSTREAM_API_KEY:-}
+      AISSTREAM_SILENCE_TIMEOUT_MS: ${AISSTREAM_SILENCE_TIMEOUT_MS:-120000}
+      TOMTOM_API_KEY: ${TOMTOM_API_KEY:-}
+      TOMTOM_DAILY_TILE_BUDGET: ${TOMTOM_DAILY_TILE_BUDGET:-6000}
+      FIRMS_MAP_KEY: ${FIRMS_MAP_KEY:-}
+      LOCAL_RECEIVER_FEEDS: ${LOCAL_RECEIVER_FEEDS:-}
+    ports:
+      - "${LISTEN_PORT:-4173}:4173"
+    volumes:
+      - gev-cache:/app/.gev-cache
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - 'fetch(''http://127.0.0.1:4173/'').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))'
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  gev-cache:
